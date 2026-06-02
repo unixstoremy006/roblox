@@ -118,8 +118,7 @@ end
 -- =============================================================================
 -- TAB UTAMA (Ciri-ciri daripada PushingV100)
 -- =============================================================================
-
--- Butang Rebirth Automatik
+-- Butang Rebirth Automatik (Telah Dibaiki - Mengelakkan Prom Robux)
 local AutoRebirthToggle = MainTab:CreateToggle({
    Name = "Auto Rebirth (Kelahiran Semula)",
    CurrentValue = currentConfig.autoRebirth,
@@ -131,7 +130,54 @@ local AutoRebirthToggle = MainTab:CreateToggle({
       if autoRebirthEnabled then
           task.spawn(function()
               while autoRebirthEnabled do
-                  if not purchasePromptActive then
+                  local bolehRebirth = false
+                  local player = game.Players.LocalPlayer
+                  
+                  -- 1. SEMAKAN UI: Periksa sama ada butang Rebirth fizikal sedang aktif/menyala
+                  local playerGui = player:FindFirstChildOfClass("PlayerGui")
+                  if playerGui then
+                      for _, v in ipairs(playerGui:GetDescendants()) do
+                          if v:IsA("TextButton") or v:IsA("ImageButton") then
+                              local namaButang = string.lower(v.Name)
+                              local teksButang = v:IsA("TextButton") and string.lower(v.Text) or ""
+                              
+                              -- Cari butang Rebirth yang tulen (bukan butang beli Robux/Developer Product)
+                              if (string.find(namaButang, "rebirth") or string.find(teksButang, "rebirth")) 
+                                 and not string.find(namaButang, "robux") 
+                                 and not string.find(teksButang, "robux") then
+                                  
+                                  -- Pastikan butang itu kelihatan di skrin dan aktif
+                                  if v.Visible and v.Parent and v.Parent.Visible then
+                                      -- Sesetengah game menukar warna butang (cth: Hijau jika bersedia)
+                                      -- atau menukar kadar ketelusan (transparency) jika tidak cukup syarat
+                                      if v.Active and v.ImageTransparency ~= 1 then
+                                          bolehRebirth = true
+                                          break
+                                      end
+                                  end
+                              end
+                          end
+                      end
+                  end
+                  
+                  -- 2. SEMAKAN BACKUP (Jika UI tidak dikesan): Periksa nilai statistik semasa pemain
+                  if not bolehRebirth then
+                      local leaderstats = player:FindFirstChild("leaderstats")
+                      if leaderstats then
+                          -- Mencari nilai stat biasa seperti Wins, Strength, atau Cash
+                          local targetStat = leaderstats:FindFirstChild("Wins") 
+                                          or leaderstats:FindFirstChild("Strength") 
+                                          or leaderstats:FindFirstChild("Cash")
+                                          
+                          if targetStat and targetStat.Value > 0 then
+                              -- Memastikan pemain mempunyai nilai minimum sebelum mencuba rebirth
+                              bolehRebirth = true
+                          end
+                      end
+                  end
+                  
+                  -- Jalankan fungsi Rebirth HANYA jika semua syarat di atas dipenuhi
+                  if bolehRebirth and not purchasePromptActive then
                       if rebirthEvent then
                            rebirthEvent:FireServer()
                       else
@@ -143,7 +189,9 @@ local AutoRebirthToggle = MainTab:CreateToggle({
                           break
                       end
                   end
-                  task.wait(0.1)
+                  
+                  -- Menggunakan selang masa 0.5 saat untuk mengelakkan spam yang mencetuskan pepijat
+                  task.wait(0.5)
               end
           end)
       end
