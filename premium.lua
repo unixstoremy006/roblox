@@ -1,4 +1,3 @@
-lua
 -- --- SISTEM PENYIMPANAN KONFIGURASI ---
 local HttpService = game:GetService("HttpService")
 local configFileName = "ZoneScriptConfig.json"
