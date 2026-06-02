@@ -131,19 +131,21 @@ local AutoRebirthToggle = MainTab:CreateToggle({
       if autoRebirthEnabled then
           task.spawn(function()
               while autoRebirthEnabled do
-                  if rebirthEvent then
-                      rebirthEvent:FireServer()
-                  else
-                      Rayfield:Notify({
-                          Name = "Ralat",
-                          Content = "rebirthEvent tidak dijumpai di ReplicatedStorage.Events!",
-                          Duration = 3
-                      })
-                      break
+                  if not purchasePromptActive then
+                      if rebirthEvent then
+                           rebirthEvent:FireServer()
+                      else
+                          Rayfield:Notify({
+                              Name = "Ralat",
+                              Content = "doRebirthEvent tidak dijumpai di ReplicatedStorage.Events!",
+                              Duration = 3
+                          })
+                          break
+                      end
                   end
                   task.wait(0.1)
               end
-          })
+          end)
       end
    end,
 })
