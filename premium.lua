@@ -145,9 +145,8 @@ local AutoRebirthToggle = MainTab:CreateToggle({
    end,
 })
 
--- Butang Beli Kelajuan 1 Automatik
 local AutoBuySpeed1Toggle = MainTab:CreateToggle({
-   Name = "Auto Beli Kelajuan 1",
+   Name = "Auto Upgrade Strength (+1)",
    CurrentValue = currentConfig.autoBuySpeed1,
    Callback = function(Value)
       autoBuySpeed1Enabled = Value
@@ -176,9 +175,8 @@ local AutoBuySpeed1Toggle = MainTab:CreateToggle({
    end,
 })
 
--- Butang Beli Kelajuan 10 Automatik
 local AutoBuySpeed10Toggle = MainTab:CreateToggle({
-   Name = "Auto Beli Kelajuan 10",
+   Name = "Auto Upgrade Strength (+10)",
    CurrentValue = currentConfig.autoBuySpeed10,
    Callback = function(Value)
       autoBuySpeed10Enabled = Value
@@ -209,7 +207,7 @@ local AutoBuySpeed10Toggle = MainTab:CreateToggle({
 
 -- Kotak Input Jumlah Naik Taraf (Keypad)
 local UpgradeAmountInput = MainTab:CreateInput({
-   Name = "Jumlah Naik Taraf (Papan Kekunci)",
+   Name = "How Many To Lv Up",
    PlaceholderText = tostring(upgradeAmount),
    RemoveTextAfterFocusLost = false,
    Callback = function(Text)
@@ -224,7 +222,7 @@ local UpgradeAmountInput = MainTab:CreateInput({
 
 -- Butang Naik Taraf Automatik mengikut Nilai Input
 local AutoUpgradeToggle = MainTab:CreateToggle({
-   Name = "Auto Naik Taraf (Jumlah Keypad)",
+   Name = "Auto Lv Up Selected",
    CurrentValue = currentConfig.autoUpgrade,
    Callback = function(Value)
       autoUpgradeEnabled = Value
@@ -253,7 +251,7 @@ local AutoUpgradeToggle = MainTab:CreateToggle({
 
 -- Butang Naik Taraf Semua Tapak
 local AutoUpgradeAllToggle = MainTab:CreateToggle({
-   Name = "Auto Naik Taraf Semua (Tapak 1 - Max)",
+   Name = "Auto Lv All Brainrots",
    CurrentValue = currentConfig.autoUpgradeAll,
    Callback = function(Value)
       autoUpgradeAllEnabled = Value
@@ -457,7 +455,7 @@ local TeleportBaseButton = MainTab:CreateButton({
 
 -- Butang Auto Farm Best (Pertanian Automatik Terbaik)
 local AutoFarmBestToggle = SpiritualTab:CreateToggle({
-   Name = "Auto Push Rock",
+   Name = "Auto Farm Brainrots",
    CurrentValue = currentConfig.autoFarmBest or false,
    Callback = function(Value)
       _G.AutoFarmBest = Value
