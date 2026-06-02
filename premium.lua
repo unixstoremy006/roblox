@@ -118,8 +118,75 @@ end
 -- =============================================================================
 -- TAB UTAMA (Ciri-ciri daripada PushingV100)
 -- =============================================================================
+-- Pembantu pintar untuk menyemak sama ada elemen UI benar-benar kelihatan di skrin (menyemak semua induk/parent)
+local function adakahBenarKelihatan(guiObject)
+    if not guiObject then return false end
+    if not guiObject.Visible then return false end
+    
+    local parent = guiObject.Parent
+    while parent and parent:IsA("GuiObject") do
+        if not parent.Visible then
+            return false
+        end
+        parent = parent.Parent
+    end
+    return true
+end
 
--- Butang Rebirth Automatik
+-- Fungsi utama untuk memastikan hanya butang Rebirth PERCUMA yang sedang aktif
+local function semakButangRebirthSah()
+    local player = game.Players.LocalPlayer
+    local playerGui = player:FindFirstChildOfClass("PlayerGui")
+    if not playerGui then return false end
+
+    for _, v in ipairs(playerGui:GetDescendants()) do
+        if v:IsA("TextButton") or v:IsA("ImageButton") then
+            local namaButang = string.lower(v.Name)
+            
+            -- Cari butang yang mengandungi perkataan "rebirth"
+            if string.find(namaButang, "rebirth") then
+                -- Tapis butang yang berbayar (Robux / Skip) secara ketat
+                local adakahButangRobux = string.find(namaButang, "robux") 
+                                       or string.find(namaButang, "skip") 
+                                       or string.find(namaButang, "buy")
+                                       or string.find(namaButang, "pass")
+                                       or string.find(namaButang, "pay")
+                
+                if not adakahButangRobux then
+                    -- Semak juga teks di dalam butang atau label anaknya
+                    local teksButang = ""
+                    if v:IsA("TextButton") then
+                        teksButang = string.lower(v.Text)
+                    else
+                        local label = v:FindFirstChildOfClass("TextLabel")
+                        if label then
+                            teksButang = string.lower(label.Text)
+                        end
+                    end
+
+                    local adakahTeksRobux = string.find(teksButang, "robux") 
+                                         or string.find(teksButang, "r$") 
+                                         or string.find(teksButang, "skip") 
+                                         or string.find(teksButang, "buy")
+                                         or string.find(teksButang, "pay")
+
+                    if not adakahTeksRobux then
+                        -- Sahkan butang ini benar-benar kelihatan pada skrin dan aktif untuk ditekan
+                        if adakahBenarKelihatan(v) and v.Active then
+                            -- Elakkan butang yang lutsinar atau tidak boleh ditekan
+                            if v.ImageTransparency < 0.8 and v.BackgroundTransparency < 0.95 then
+                                return true
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return false
+end
+
+-- Butang Rebirth Automatik (Mencegah Prom Pembelian Robux / Skip)
 local AutoRebirthToggle = MainTab:CreateToggle({
    Name = "Auto Rebirth (Kelahiran Semula)",
    CurrentValue = currentConfig.autoRebirth,
@@ -131,7 +198,8 @@ local AutoRebirthToggle = MainTab:CreateToggle({
       if autoRebirthEnabled then
           task.spawn(function()
               while autoRebirthEnabled do
-                  if not purchasePromptActive then
+                  -- Hanya jalankan isyarat Rebirth jika butang percuma benar-benar menyala/tersedia
+                  if semakButangRebirthSah() and not purchasePromptActive then
                       if rebirthEvent then
                            rebirthEvent:FireServer()
                       else
@@ -142,8 +210,10 @@ local AutoRebirthToggle = MainTab:CreateToggle({
                           })
                           break
                       end
+                      -- Beri sedikit selang masa selepas berjaya rebirth untuk mengelakkan spam melampau
+                      task.wait(1.5)
                   end
-                  task.wait(0.1)
+                  task.wait(0.5) -- Kadar semakan butang setiap 0.5 saat
               end
           end)
       end
@@ -371,8 +441,8 @@ local ServerHopButton = MainTab:CreateButton({
 
 -- Teleportasi Zon (Sistem Dropdown)
 local zonesFolder = workspace:WaitForChild("Zones", 10)
-local zoneNames = {"Zone8", "Zone9", "Zone10"}
-local selectedZone = "Zone10" -- Set laluan lalai (default)
+local zoneNames = {}
+local selectedZone = nil
 
 if zonesFolder then
     for _, zone in ipairs(zonesFolder:GetChildren()) do
