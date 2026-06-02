@@ -1,225 +1,290 @@
--- Grow A Garden Exploit GUI by Grok
+-- 🌱 Grow A Garden Advanced Exploit GUI
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
--- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "GrowGardenHub"
+ScreenGui.Name = "GrowGardenAdvanced"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 420, 0, 500)
-MainFrame.Position = UDim2.new(0.5, -210, 0.5, -250)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+MainFrame.Size = UDim2.new(0, 460, 0, 560)
+MainFrame.Position = UDim2.new(0.5, -230, 0.5, -280)
+MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
 
--- Corner + Stroke
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 12)
-UICorner.Parent = MainFrame
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(60, 180, 120)
-UIStroke.Thickness = 1.5
-UIStroke.Parent = MainFrame
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 14)
+Instance.new("UIStroke", MainFrame).Color = Color3.fromRGB(40, 200, 120)
 
 -- Title
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 50)
+Title.Size = UDim2.new(1, 0, 0, 60)
 Title.BackgroundTransparency = 1
 Title.Text = "🌱 Grow A Garden Hub"
-Title.TextColor3 = Color3.fromRGB(100, 255, 150)
+Title.TextColor3 = Color3.fromRGB(80, 255, 140)
 Title.TextScaled = true
 Title.Font = Enum.Font.GothamBold
 Title.Parent = MainFrame
 
--- Tab buttons container
-local TabFrame = Instance.new("Frame")
-TabFrame.Size = UDim2.new(1, -20, 0, 40)
-TabFrame.Position = UDim2.new(0, 10, 0, 60)
-TabFrame.BackgroundTransparency = 1
-TabFrame.Parent = MainFrame
+-- Tabs Container
+local TabContainer = Instance.new("Frame")
+TabContainer.Size = UDim2.new(1, -20, 0, 50)
+TabContainer.Position = UDim2.new(0, 10, 0, 60)
+TabContainer.BackgroundTransparency = 1
+TabContainer.Parent = MainFrame
 
--- Content Frame
-local Content = Instance.new("ScrollingFrame")
-Content.Size = UDim2.new(1, -20, 1, -120)
-Content.Position = UDim2.new(0, 10, 0, 110)
-Content.BackgroundTransparency = 1
-Content.ScrollBarThickness = 6
-Content.CanvasSize = UDim2.new(0, 0, 0, 800)
-Content.Parent = MainFrame
+local Tabs = {}
 
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Padding = UDim.new(0, 8)
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Parent = Content
-
--- Simple Toggle Function
-local function CreateToggle(parent, text, default, callback)
-    local ToggleFrame = Instance.new("Frame")
-    ToggleFrame.Size = UDim2.new(1, -10, 0, 50)
-    ToggleFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-    ToggleFrame.Parent = parent
-    
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 8)
-    Corner.Parent = ToggleFrame
-    
-    local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(0.7, 0, 1, 0)
-    Label.BackgroundTransparency = 1
-    Label.Text = text
-    Label.TextColor3 = Color3.fromRGB(220, 220, 220)
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Font = Enum.Font.GothamSemibold
-    Label.TextSize = 16
-    Label.Parent = ToggleFrame
-    
-    local ToggleButton = Instance.new("TextButton")
-    ToggleButton.Size = UDim2.new(0, 80, 0, 30)
-    ToggleButton.Position = UDim2.new(1, -90, 0.5, -15)
-    ToggleButton.BackgroundColor3 = default and Color3.fromRGB(60, 180, 120) or Color3.fromRGB(80, 80, 85)
-    ToggleButton.Text = default and "ON" or "OFF"
-    ToggleButton.TextColor3 = Color3.fromRGB(255,255,255)
-    ToggleButton.Font = Enum.Font.GothamBold
-    ToggleButton.Parent = ToggleFrame
-    
-    local TCorner = Instance.new("UICorner")
-    TCorner.CornerRadius = UDim.new(0, 8)
-    TCorner.Parent = ToggleButton
-    
-    local enabled = default
-    
-    ToggleButton.MouseButton1Click:Connect(function()
-        enabled = not enabled
-        ToggleButton.BackgroundColor3 = enabled and Color3.fromRGB(60, 180, 120) or Color3.fromRGB(80, 80, 85)
-        ToggleButton.Text = enabled and "ON" or "OFF"
-        callback(enabled)
-    end)
-    
-    return ToggleFrame
+local function CreateTab(name)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 80, 1, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    btn.Text = name
+    btn.TextColor3 = Color3.fromRGB(200,200,200)
+    btn.Font = Enum.Font.GothamSemibold
+    btn.TextSize = 14
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    btn.Parent = TabContainer
+    return btn
 end
 
--- Unlimited Jump
-local jumpConnection
-CreateToggle(Content, "Unlimited Jump", false, function(state)
-    if state then
-        jumpConnection = RunService.RenderStepped:Connect(function()
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                LocalPlayer.Character.Humanoid.JumpPower = 150
-                LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-            end
-        end)
-    else
-        if jumpConnection then jumpConnection:Disconnect() end
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.JumpPower = 50
-        end
-    end
-end)
+-- Content Frame
+local ContentFrame = Instance.new("ScrollingFrame")
+ContentFrame.Size = UDim2.new(1, -20, 1, -130)
+ContentFrame.Position = UDim2.new(0, 10, 0, 120)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.ScrollBarThickness = 5
+ContentFrame.CanvasSize = UDim2.new(0,0,0,0)
+ContentFrame.Parent = MainFrame
 
--- NoClip
-local noclipConnection
-CreateToggle(Content, "No Clip (Phase Through Walls)", false, function(state)
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.Padding = UDim.new(0, 10)
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ListLayout.Parent = ContentFrame
+
+-- Toggle Function
+local function AddToggle(parent, text, default, callback)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 0, 50)
+    frame.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+    frame.Parent = parent
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0.65, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(230,230,230)
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Font = Enum.Font.GothamSemibold
+    label.TextSize = 16
+    label.Parent = frame
+
+    local toggle = Instance.new("TextButton")
+    toggle.Size = UDim2.new(0, 90, 0, 32)
+    toggle.Position = UDim2.new(1, -100, 0.5, -16)
+    toggle.BackgroundColor3 = default and Color3.fromRGB(60, 200, 120) or Color3.fromRGB(70, 70, 75)
+    toggle.Text = default and "ON" or "OFF"
+    toggle.TextColor3 = Color3.new(1,1,1)
+    toggle.Font = Enum.Font.GothamBold
+    toggle.Parent = frame
+    Instance.new("UICorner", toggle).CornerRadius = UDim.new(0, 8)
+
+    local enabled = default
+    toggle.MouseButton1Click:Connect(function()
+        enabled = not enabled
+        toggle.BackgroundColor3 = enabled and Color3.fromRGB(60, 200, 120) or Color3.fromRGB(70, 70, 75)
+        toggle.Text = enabled and "ON" or "OFF"
+        callback(enabled)
+    end)
+end
+
+local function AddSlider(parent, text, min, max, default, callback)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 0, 70)
+    frame.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+    frame.Parent = parent
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 0, 25)
+    label.BackgroundTransparency = 1
+    label.Text = text .. ": " .. default
+    label.TextColor3 = Color3.fromRGB(230,230,230)
+    label.Font = Enum.Font.GothamSemibold
+    label.Parent = frame
+
+    local slider = Instance.new("TextButton")
+    slider.Size = UDim2.new(1, -20, 0, 8)
+    slider.Position = UDim2.new(0, 10, 0, 40)
+    slider.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+    slider.Parent = frame
+    Instance.new("UICorner", slider)
+
+    local fill = Instance.new("Frame")
+    fill.Size = UDim2.new((default-min)/(max-min), 0, 1, 0)
+    fill.BackgroundColor3 = Color3.fromRGB(60, 200, 120)
+    fill.Parent = slider
+    Instance.new("UICorner", fill)
+
+    -- Simple slider logic (you can improve)
+    slider.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            local conn
+            conn = game:GetService("UserInputService").InputChanged:Connect(function(inp)
+                if inp.UserInputType == Enum.UserInputType.MouseMovement then
+                    local pos = math.clamp((inp.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X, 0, 1)
+                    fill.Size = UDim2.new(pos, 0, 1, 0)
+                    local value = math.floor(min + (max - min) * pos)
+                    label.Text = text .. ": " .. value
+                    callback(value)
+                end
+            end)
+            game:GetService("UserInputService").InputEnded:Connect(function() conn:Disconnect() end)
+        end
+    end)
+end
+
+-- ================== TABS ==================
+local currentTab = nil
+
+local function SwitchTab(tabContent)
+    for _, v in pairs(ContentFrame:GetChildren()) do
+        if v:IsA("Frame") or v:IsA("ScrollingFrame") then v.Visible = false end
+    end
+    tabContent.Visible = true
+end
+
+-- 🌱 Farming Tab
+local FarmingTab = Instance.new("Frame")
+FarmingTab.Size = UDim2.new(1,0,0,0)
+FarmingTab.BackgroundTransparency = 1
+FarmingTab.Visible = false
+FarmingTab.Parent = ContentFrame
+AddToggle(FarmingTab, "Auto Plant", false, function(s) print("Auto Plant:", s) end)
+AddToggle(FarmingTab, "Auto Water", false, function(s) print("Auto Water:", s) end)
+AddToggle(FarmingTab, "Auto Harvest", false, function(s) print("Auto Harvest:", s) end)
+AddToggle(FarmingTab, "Auto Sell", false, function(s) print("Auto Sell:", s) end)
+AddToggle(FarmingTab, "Auto Replant", false, function(s) print("Auto Replant:", s) end)
+AddToggle(FarmingTab, "Collect Nearby Crops", false, function(s) print("Collect Nearby:", s) end)
+
+-- 🛒 Shops Tab
+local ShopsTab = Instance.new("Frame")
+ShopsTab.Size = UDim2.new(1,0,0,0)
+ShopsTab.BackgroundTransparency = 1
+ShopsTab.Visible = false
+ShopsTab.Parent = ContentFrame
+AddToggle(ShopsTab, "Buy Selected Seed", false, function(s) end)
+AddToggle(ShopsTab, "Buy Selected Gear", false, function(s) end)
+AddToggle(ShopsTab, "Buy Selected Egg", false, function(s) end)
+AddToggle(ShopsTab, "Refresh Shop", false, function(s) end)
+AddToggle(ShopsTab, "Favorite Items", false, function(s) end)
+
+-- 🐾 Pets Tab
+local PetsTab = Instance.new("Frame")
+PetsTab.Size = UDim2.new(1,0,0,0)
+PetsTab.BackgroundTransparency = 1
+PetsTab.Visible = false
+PetsTab.Parent = ContentFrame
+AddToggle(PetsTab, "Equip Best Pet", false, function(s) end)
+AddToggle(PetsTab, "Auto Feed Pet", false, function(s) end)
+AddToggle(PetsTab, "Pet Inventory", false, function(s) end)
+AddToggle(PetsTab, "Pet Statistics", false, function(s) end)
+
+-- 🎒 Inventory Tab
+local InvTab = Instance.new("Frame")
+InvTab.Size = UDim2.new(1,0,0,0)
+InvTab.BackgroundTransparency = 1
+InvTab.Visible = false
+InvTab.Parent = ContentFrame
+AddToggle(InvTab, "Search Item", false, function(s) end)
+AddToggle(InvTab, "Sort by Value", false, function(s) end)
+AddToggle(InvTab, "Sort by Rarity", false, function(s) end)
+AddToggle(InvTab, "Quick Delete", false, function(s) end)
+AddToggle(InvTab, "Favorite Items", false, function(s) end)
+
+-- 📊 Player Tab
+local PlayerTab = Instance.new("Frame")
+PlayerTab.Size = UDim2.new(1,0,0,0)
+PlayerTab.BackgroundTransparency = 1
+PlayerTab.Visible = false
+PlayerTab.Parent = ContentFrame
+
+AddToggle(PlayerTab, "No Clip", true, function(state) -- Already working for you
     if state then
-        noclipConnection = RunService.Stepped:Connect(function()
+        game:GetService("RunService").Stepped:Connect(function()
             if LocalPlayer.Character then
                 for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-                    if part:IsA("BasePart") and part.CanCollide then
-                        part.CanCollide = false
-                    end
+                    if part:IsA("BasePart") then part.CanCollide = false end
                 end
             end
         end)
-    else
-        if noclipConnection then noclipConnection:Disconnect() end
     end
 end)
 
--- Buy All Seeds (Seed Shop)
-CreateToggle(Content, "Auto Buy All Seeds", false, function(state)
-    -- Replace with actual RemoteEvent path if found via explorer
-    spawn(function()
-        while state and task.wait(0.5) do
-            local seedShop = workspace:FindFirstChild("SeedShop") or workspace:FindFirstChild("Shops")
-            if seedShop and seedShop:FindFirstChild("BuyRemote") then
-                seedShop.BuyRemote:FireServer("All") -- Adjust name
-            end
-        end
+AddSlider(PlayerTab, "WalkSpeed", 16, 100, 50, function(v)
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = v
+    end
+end)
+
+AddSlider(PlayerTab, "JumpPower", 50, 200, 80, function(v)
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.JumpPower = v
+    end
+end)
+
+AddSlider(PlayerTab, "Field of View", 70, 120, 90, function(v)
+    game:GetService("Workspace").Camera.FieldOfView = v
+end)
+
+-- 🌍 Teleports Tab
+local TeleTab = Instance.new("Frame")
+TeleTab.Size = UDim2.new(1,0,0,0)
+TeleTab.BackgroundTransparency = 1
+TeleTab.Visible = false
+TeleTab.Parent = ContentFrame
+AddToggle(TeleTab, "Seed Shop", false, function() end)
+AddToggle(TeleTab, "Gear Shop", false, function() end)
+AddToggle(TeleTab, "Egg Shop", false, function() end)
+AddToggle(TeleTab, "Farm Area", false, function() end)
+AddToggle(TeleTab, "Event Area", false, function() end)
+
+-- ⚙️ Utilities Tab
+local UtilTab = Instance.new("Frame")
+UtilTab.Size = UDim2.new(1,0,0,0)
+UtilTab.BackgroundTransparency = 1
+UtilTab.Visible = false
+UtilTab.Parent = ContentFrame
+AddToggle(UtilTab, "FPS Booster", false, function() end)
+AddToggle(UtilTab, "Rejoin Server", false, function() end)
+AddToggle(UtilTab, "Performance Monitor", false, function() end)
+
+-- Create Tabs Buttons
+local tabList = {
+    {name = "Farming", frame = FarmingTab},
+    {name = "Shops", frame = ShopsTab},
+    {name = "Pets", frame = PetsTab},
+    {name = "Inventory", frame = InvTab},
+    {name = "Player", frame = PlayerTab},
+    {name = "Teleports", frame = TeleTab},
+    {name = "Utilities", frame = UtilTab}
+}
+
+for _, tab in ipairs(tabList) do
+    local btn = CreateTab(tab.name)
+    btn.MouseButton1Click:Connect(function()
+        SwitchTab(tab.frame)
     end)
-end)
+end
 
--- Buy All Gear
-CreateToggle(Content, "Auto Buy All Gear", false, function(state)
-    spawn(function()
-        while state and task.wait(0.5) do
-            -- Adjust remote
-            local gearRemote = workspace:FindFirstChild("GearShop") and workspace.GearShop:FindFirstChild("Purchase")
-            if gearRemote then
-                gearRemote:FireServer("All")
-            end
-        end
-    end)
-end)
+-- Default Tab
+FarmingTab.Visible = true
 
--- Buy All Eggs
-CreateToggle(Content, "Auto Buy All Eggs", false, function(state)
-    spawn(function()
-        while state and task.wait(0.5) do
-            -- Adjust
-            if workspace:FindFirstChild("EggShop") then
-                -- Fire server with egg type
-            end
-        end
-    end)
-end)
-
--- Additional Exploits
-CreateToggle(Content, "Auto Farm / Auto Harvest", false, function(state)
-    -- Common in public scripts: loop through plots and fire harvest/plant remotes
-    print("Auto Farm enabled - implement loop over your garden plots")
-end)
-
-CreateToggle(Content, "Seed/Pet/Egg Spawner (Infinite)", false, function(state)
-    print("Use item spawner remotes - common: ReplicatedStorage.Remotes.GiveItem")
-end)
-
-CreateToggle(Content, "Infinite Money / Shekels", false, function(state)
-    -- Often via dupe or direct remote
-end)
-
-CreateToggle(Content, "Auto Sell All", false, function(state)
-    -- Fire sell remote
-end)
-
-CreateToggle(Content, "Speed Hack (WalkSpeed)", false, function(state)
-    spawn(function()
-        while state and task.wait() do
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                LocalPlayer.Character.Humanoid.WalkSpeed = 50
-            end
-        end
-    end)
-end)
-
--- Close Button
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-CloseBtn.Position = UDim2.new(1, -40, 0, 10)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-CloseBtn.Text = "X"
-CloseBtn.TextColor3 = Color3.new(1,1,1)
-CloseBtn.Parent = MainFrame
-local CloseCorner = Instance.new("UICorner", CloseBtn)
-CloseBtn.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
-
-print("🌱 Grow A Garden Hub loaded! Drag the window. Use responsibly.")
+print("🌱 Grow A Garden Advanced GUI Loaded!")
+print("Only NoClip is fully working for now. Others need remote paths from your executor.")
