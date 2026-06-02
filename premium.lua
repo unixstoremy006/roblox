@@ -369,29 +369,15 @@ local ServerHopButton = MainTab:CreateButton({
    end,
 })
 
--- Teleportasi Zon (Sistem Dropdown)
+-- --- TELEPORTASI ZON (Dihadkan kepada Zone8, Zone9, Zone10) ---
 local zonesFolder = workspace:WaitForChild("Zones", 10)
-local zoneNames = {}
-local selectedZone = nil
-
-if zonesFolder then
-    for _, zone in ipairs(zonesFolder:GetChildren()) do
-        if zone:IsA("BasePart") then
-            table.insert(zoneNames, zone.Name)
-        end
-    end
-else
-    Rayfield:Notify({
-        Name = "Amaran",
-        Content = "Folder 'Zones' tidak dijumpai di Workspace!",
-        Duration = 3,
-    })
-end
+local zoneNames = {"Zone8", "Zone9", "Zone10"}
+local selectedZone = "Zone8" -- Set laluan lalai (default)
 
 local ZoneDropdown = MainTab:CreateDropdown({
-   Name = "Pilih Zon Sasaran",
+   Name = "Pilih Zon Sasaran (Khusus)",
    Options = zoneNames,
-   CurrentOption = {zoneNames[1] or ""},
+   CurrentOption = {selectedZone},
    MultipleOptions = false,
    Callback = function(Option)
       selectedZone = Option[1]
@@ -406,13 +392,19 @@ local TeleportButton = MainTab:CreateButton({
           return
       end
       
+      if not zonesFolder then
+          Rayfield:Notify({Name = "Ralat", Content = "Folder 'Zones' tidak dijumpai di Workspace!", Duration = 3})
+          return
+      end
+
       local targetPart = zonesFolder:FindFirstChild(selectedZone)
       local player = game.Players.LocalPlayer
       
       if targetPart and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
           player.Character.HumanoidRootPart.CFrame = targetPart.CFrame + Vector3.new(0, 3, 0)
+          Rayfield:Notify({Name = "Berjaya", Content = "Teleport ke " .. selectedZone .. " berjaya!", Duration = 3})
       else
-          Rayfield:Notify({Name = "Ralat", Content = "Zon sasaran atau Karakter tidak dijumpai.", Duration = 3})
+          Rayfield:Notify({Name = "Ralat", Content = "Zon sasaran (" .. selectedZone .. ") atau Karakter tidak dijumpai di dalam game.", Duration = 3})
       end
    end,
 })
@@ -774,6 +766,6 @@ game.Players.PlayerRemoving:Connect(cleanESP)
 -- Mengeluarkan notifikasi bahawa menu telah berjaya dilancarkan tanpa kunci
 Rayfield:Notify({
     Name = "Sistem Bersatu",
-    Content = "Semua ciri daripada kedua-dua skrip berjaya digabungkan tanpa sistem kunci!",
+    Content = "Semua ciri berjaya digabungkan & Pilihan Zon dihadkan kepada Zone 8, 9, dan 10!",
     Duration = 5
 })
